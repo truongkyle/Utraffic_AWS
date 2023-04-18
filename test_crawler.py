@@ -149,7 +149,7 @@ def crawl_data(limit=40):
                 'source': 'tom-tom',
                 'weather': weather
             }
-            print(output[point["segment_id"]])
+            # print(output[point["segment_id"]])
         id += 1
         if id == limit: break
     date, period, weekday = parse_date_and_period(timestamp)
