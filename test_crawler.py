@@ -4,6 +4,7 @@ import time
 from pytz import timezone
 import datetime as dt
 import schedule
+import os
 
 from resources import ConfigS3
 
@@ -42,6 +43,22 @@ LOG_FILE = 'weatherapi_logs.txt'
 HCMC = [10.8333, 106.6667]	# https://openweathermap.org/find?q=Ho+Chi+Minh
 
 BASE_URL = f"https://api.openweathermap.org/data/2.5/weather"
+
+PERIOD_LENGTH = 5  # minutes
+
+def parse_date_and_period(timestamp):
+    ts = dt.datetime.fromtimestamp(timestamp)
+    date, time, weeekday = ts.date(), ts.time(), ts.weekday()
+
+    h, m, s = time.hour, time.minute, time.second
+
+    hour = f"0{h}" if h < 10 else str(h)
+    step = (m * 60 + s) // (PERIOD_LENGTH * 60)
+    m = PERIOD_LENGTH * step
+    minute = f"0{m}" if m < 10 else str(m)
+    period = f"period_{hour}_{minute}"
+
+    return str(date), period, weeekday
 
 def crawl_current_weather():
 	params = {
@@ -132,13 +149,18 @@ def crawl_data(limit=40):
                 'source': 'tom-tom',
                 'weather': weather
             }
+            print(output[point["segment_id"]])
         id += 1
         if id == limit: break
-
+    date, period, weekday = parse_date_and_period(timestamp)
     with open('output.json', 'w') as f:
         json.dump(output, f)
+    try:
+        define_s3.upload_file_to_s3('output.json', f'tomtom-voh/{date}/{timestamp}.json')
+    except:
+       pass
+    os.remove('output.json')
 
-    define_s3.upload_file_to_s3('output.json', f'tomtom-voh/{timestamp}.json')
     # s3 = boto3.client('s3')
     # with open('output.json', 'rb') as f:
     #     s3.upload_fileobj(f, 'tomtom-voh', f"{timestamp}.json")
