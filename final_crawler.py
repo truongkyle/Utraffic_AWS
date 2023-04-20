@@ -218,9 +218,10 @@ def main():
 
 
 if __name__ == '__main__':
+   print(parse_date_and_period(1681870967))
   #  timestamp = crawl_data()
-  print('Running...')
-  try:
-    main()
-  finally:
-    print('Done!')
+  # print('Running...')
+  # try:
+  #   main()
+  # finally:
+  #   print('Done!')

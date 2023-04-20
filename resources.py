@@ -58,6 +58,15 @@ class ConfigS3:
     def get_folder_name_from_s3(self, s3_key):
         foldername = os.path.dirname(s3_key)
         return foldername
+    
+    def get_folder_from_s3(self, folder_name):
+        for obj in self.bucket.objects.filter(Prefix=folder_name):
+            if not os.path.exists(os.path.dirname(obj.key)):
+                os.makedirs(os.path.dirname(obj.key))
+            try:
+                self.bucket.download_file(obj.key, obj.key)
+            except Exception:
+                pass
 
     def delete_files_in_s3(self, s3_key):
         try:
